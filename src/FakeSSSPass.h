@@ -36,64 +36,63 @@
 
 namespace itg
 {
-    /*
+/*
      * @see http://machinesdontcare.wordpress.com/2008/10/29/subsurface-scatter-shader/
      */
-    class FakeSSSPass : public RenderPass
-    {
-    public:
-        
-        typedef shared_ptr<FakeSSSPass> Ptr;
-        
-        FakeSSSPass(const ofVec2f& aspect,
-                    bool arb,
-                    const ofPoint& lightPosition = ofPoint(0,0,0),
-                    const ofVec4f& extinctionCoefficient = ofVec4f(0.8,0.3,0.1,1.0),
-                    const ofVec4f& lightColor = ofVec4f(1.0, 1.0, 1.0, 1.0),
-                    const ofVec4f& specularColor = ofVec4f(1.0, 1.0, 1.0, 1.0),
-                    float specular = 1.0, float rimScale = 1.0,
-                    float attenuationOffset = 3.0, float materialThickness = 0.6);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depth);
-        
-        void setLightPosition(const ofPoint& pt) { lightPosition.set(pt); }
-        const ofPoint getLightPosition() { return lightPosition; }
-        
-        void setExtinctionCoefficient(const ofVec4f& pt) { extinctionCoefficient.set(pt); }
-        const ofVec4f getExtinctionCoefficient() { return extinctionCoefficient; }
-        
-        void setLightColor(const ofVec4f& pt) { lightColor.set(pt); }
-        const ofVec4f getLightColor() { return lightColor; }
-        
-        void setBaseColor(const ofVec4f& pt) { baseColor.set(pt); }
-        const ofVec4f getBaseColor() { return baseColor; }
-        
-        void setSpecularColor(const ofVec4f& pt) { specularColor.set(pt); }
-        const ofVec4f getSpecularColor() { return specularColor; }
-        
-        void setMaterialThickness(float val) { materialThickness = val; }
-        float getMaterialThickness() { return materialThickness; }
-        
-        void setSpecular(float val) { specular = val; }
-        float getSpecular() { return specular; }
-        
-        void setRimScale(float val) { rimScale = val; }
-        float getRimScale() { return rimScale; }
-        
-        void setAttenuationOffset(float val) { attenuationOffset = val; }
-        float getAttenuationOffset() { return attenuationOffset; }
-    private:
-        
-        ofShader shader;
-        
-        ofPoint lightPosition;
-        ofVec4f extinctionCoefficient;
-        ofVec4f lightColor;
-        ofVec4f baseColor;
-        ofVec4f specularColor;
-        float materialThickness;
-        float specular;
-        float rimScale;
-        float attenuationOffset;
-    };
-}
+class FakeSSSPass : public RenderPass
+{
+public:
+    typedef shared_ptr<FakeSSSPass> Ptr;
+
+    FakeSSSPass(const ofVec2f &aspect,
+                bool arb,
+                const ofPoint &lightPosition = ofPoint(0, 0, 0),
+                const ofVec4f &extinctionCoefficient = ofVec4f(0.8, 0.3, 0.1, 1.0),
+                const ofVec4f &lightColor = ofVec4f(1.0, 1.0, 1.0, 1.0),
+                const ofVec4f &specularColor = ofVec4f(1.0, 1.0, 1.0, 1.0),
+                float specular = 1.0, float rimScale = 1.0,
+                float attenuationOffset = 3.0, float materialThickness = 0.6);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depth);
+
+    void setLightPosition(const ofPoint &pt) { lightPosition.set(pt); }
+    const ofPoint getLightPosition() { return lightPosition; }
+
+    void setExtinctionCoefficient(const ofVec4f &pt) { extinctionCoefficient.set(pt); }
+    const ofVec4f getExtinctionCoefficient() { return extinctionCoefficient; }
+
+    void setLightColor(const ofVec4f &pt) { lightColor.set(pt); }
+    const ofVec4f getLightColor() { return lightColor; }
+
+    void setBaseColor(const ofVec4f &pt) { baseColor.set(pt); }
+    const ofVec4f getBaseColor() { return baseColor; }
+
+    void setSpecularColor(const ofVec4f &pt) { specularColor.set(pt); }
+    const ofVec4f getSpecularColor() { return specularColor; }
+
+    void setMaterialThickness(float val) { materialThickness = val; }
+    ofParameter<float> &getMaterialThickness() { return materialThickness; }
+
+    void setSpecular(float val) { specular = val; }
+    ofParameter<float> &getSpecular() { return specular; }
+
+    void setRimScale(float val) { rimScale = val; }
+    ofParameter<float> &getRimScale() { return rimScale; }
+
+    void setAttenuationOffset(float val) { attenuationOffset = val; }
+    ofParameter<float> &getAttenuationOffset() { return attenuationOffset; }
+
+private:
+    ofShader shader;
+
+    ofPoint lightPosition;
+    ofVec4f extinctionCoefficient;
+    ofVec4f lightColor;
+    ofVec4f baseColor;
+    ofVec4f specularColor;
+    ofParameter<float> materialThickness;
+    ofParameter<float> specular;
+    ofParameter<float> rimScale;
+    ofParameter<float> attenuationOffset;
+};
+} // namespace itg

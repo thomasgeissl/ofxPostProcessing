@@ -35,21 +35,21 @@
 
 namespace itg
 {
-    /*
+/*
      * @see https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/FXAAShader.js
      */
-    class FxaaPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<FxaaPass> Ptr;
-    
-        FxaaPass(const ofVec2f& aspect, bool arb);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-        bool hasArbShader() { return true; }
-        
-    private:
-        ofShader shader;
-    };
-}
+class FxaaPass : public RenderPass
+{
+public:
+    typedef shared_ptr<FxaaPass> Ptr;
+
+    FxaaPass(const ofVec2f &aspect, bool arb);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+    bool hasArbShader() { return true; }
+
+private:
+    ofShader shader;
+};
+} // namespace itg

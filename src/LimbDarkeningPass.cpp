@@ -33,65 +33,71 @@
 
 namespace itg
 {
-    LimbDarkeningPass::LimbDarkeningPass(const ofVec2f& aspect,
-                                         bool arb,
-                                         float radialScale,
-                                         float brightness,
-                                         const ofVec3f & startColor,
-                                         const ofVec3f & endColor) :
-    radialScale(radialScale), brightness(brightness), startColor(startColor), endColor(endColor), RenderPass(aspect, arb, "limbdarkening")
-    {
-        
-        string fragShaderSrc = STRINGIFY(
-            uniform sampler2D myTexture;
-            uniform float fAspect;
+LimbDarkeningPass::LimbDarkeningPass(const ofVec2f &aspect,
+                                     bool arb,
+                                     float radialScale,
+                                     float brightness,
+                                     ofColor startColor,
+                                     ofColor endColor) : radialScale(radialScale), brightness(brightness), startColor(startColor), endColor(endColor), RenderPass(aspect, arb, "limbdarkening")
+{
 
-            uniform vec3 startColor;
-            uniform vec3 endColor;
-                                         
-            uniform float radialScale;//0. - 1.0 - 2.0
-            uniform float brightness;//0.-1.0, deff:2.5
-            void main() {
-                vec2 vUv = gl_TexCoord[0].st;
-                vec2 vSunPositionScreenSpace = vec2(0.5);
-                
-                vec2 diff = vUv - vSunPositionScreenSpace;
+    string fragShaderSrc = STRINGIFY(
+        uniform sampler2D myTexture;
+        uniform float fAspect;
 
-                // Correct for aspect ratio
+        uniform vec3 startColor;
+        uniform vec3 endColor;
 
-                diff.x *= fAspect;
+        uniform float radialScale; //0. - 1.0 - 2.0
+        uniform float brightness;  //0.-1.0, deff:2.5
+        void main() {
+            vec2 vUv = gl_TexCoord[0].st;
+            vec2 vSunPositionScreenSpace = vec2(0.5);
 
-                float prop = length( diff ) / radialScale;
-                prop = clamp( 2.5 * pow( 1.0 - prop, 3.0 ), 0.0, 1.0 );
-                
-                vec3 color = mix( startColor, endColor, 1.0 - prop );
+            vec2 diff = vUv - vSunPositionScreenSpace;
 
-                vec4 base = texture2D(myTexture, vUv);
-                gl_FragColor = vec4(base.xyz * color, 1.0);
+            // Correct for aspect ratio
 
-            }
-        );
-        
-        shader.setupShaderFromSource(GL_FRAGMENT_SHADER, "#version 110\n" + fragShaderSrc);
-        shader.linkProgram();
+            diff.x *= fAspect;
 
-    }
-    
-    void LimbDarkeningPass::render(ofFbo& readFbo, ofFbo& writeFbo)
-    {
-        writeFbo.begin();
-        
-        shader.begin();
-        shader.setUniformTexture("myTexture", readFbo.getTexture(), 0);
-        shader.setUniform1f("fAspect", 1);
-        shader.setUniform3f("startColor", 1, 1, 1);
-        shader.setUniform3f("endColor", 0, 0, 0);
-        shader.setUniform1f("radialScale", 1.2);
-        shader.setUniform1f("brightness", 2.5);
-        
-        texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
-        
-        shader.end();
-        writeFbo.end();
-    }
+            float prop = length(diff) / radialScale;
+            prop = clamp(2.5 * pow(1.0 - prop, 3.0), 0.0, 1.0);
+
+            vec3 color = mix(startColor, endColor, 1.0 - prop);
+
+            vec4 base = texture2D(myTexture, vUv);
+            gl_FragColor = vec4(base.xyz * color, 1.0);
+        });
+
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, "#version 110\n" + fragShaderSrc);
+    shader.linkProgram();
+
+    this->startColor.set("startColor", startColor);
+    this->endColor.set("endColor", endColor);
+    this->radialScale.set("radialScale", radialScale, 0, 5);
+    this->brightness.set("brightness", brightness, 0, 1);
+
+    parameters.add(this->startColor);
+    parameters.add(this->endColor);
+    parameters.add(this->radialScale);
+    parameters.add(this->brightness);
 }
+
+void LimbDarkeningPass::render(ofFbo &readFbo, ofFbo &writeFbo)
+{
+    writeFbo.begin();
+
+    shader.begin();
+    shader.setUniformTexture("myTexture", readFbo.getTexture(), 0);
+    shader.setUniform1f("fAspect", 1);
+    shader.setUniform3f("startColor", (float)(startColor->r / 255), (float)(startColor->g / 255), (float)(startColor->b / 255));
+    shader.setUniform3f("endColor", (float)(endColor->r / 255), (float)(endColor->g / 255), (float)(endColor->b / 255));
+    shader.setUniform1f("radialScale", radialScale);
+    shader.setUniform1f("brightness", brightness);
+
+    texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
+
+    shader.end();
+    writeFbo.end();
+}
+} // namespace itg

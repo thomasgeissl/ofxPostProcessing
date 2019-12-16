@@ -33,53 +33,56 @@
 
 namespace itg
 {
-    HsbShiftPass::HsbShiftPass(const ofVec2f& aspect, bool arb, float hueShift, float saturationShift, float brightnessShift) :
-        hueShift(hueShift), saturationShift(saturationShift), brightnessShift(brightnessShift), RenderPass(aspect, arb, "hsbshift")
-    {
-        string fragShaderSrc = STRINGIFY(
-            uniform sampler2D tex;
-            uniform float hueShift;
-            uniform float saturationShift;
-            uniform float brightnessShift;
-                                         
-            // https://love2d.org/wiki/HSV_color
-            vec3 hsbToRgb(vec3 c) { return mix(vec3(1.),clamp((abs(fract(c.x+vec3(3.,2.,1.)/3.)*6.-3.)-1.),0.,1.),c.y)*c.z; }
-            // http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
-            vec3 rgbToHsb(vec3 c)
-            {
-                vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-                vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-                vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-                
-                float d = q.x - min(q.w, q.y);
-                float e = 1.0e-10;
-                return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-            }
-                                         
-            void main()
-            {
-                vec3 hsb = rgbToHsb(texture2D(tex, gl_TexCoord[0].st).rgb);
-                vec3 rgb = hsbToRgb(vec3(hsb.x + hueShift, hsb.y + saturationShift, hsb.z + brightnessShift));
-                gl_FragColor = vec4(rgb, 1.0);
-            }
-        );
-        
-        shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
-        shader.linkProgram();
-    }
-    
-    void HsbShiftPass::render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depth)
-    {
-        writeFbo.begin();
-        shader.begin();
-        shader.setUniformTexture("tex", readFbo.getTexture(), 0);
-        shader.setUniform1f("hueShift", hueShift);
-        shader.setUniform1f("saturationShift", saturationShift);
-        shader.setUniform1f("brightnessShift", brightnessShift);
-        
-        texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
-        
-        shader.end();
-        writeFbo.end();
-    }
+HsbShiftPass::HsbShiftPass(const ofVec2f &aspect, bool arb, float hueShift, float saturationShift, float brightnessShift) : hueShift(hueShift), saturationShift(saturationShift), brightnessShift(brightnessShift), RenderPass(aspect, arb, "hsbshift")
+{
+    string fragShaderSrc = STRINGIFY(
+        uniform sampler2D tex;
+        uniform float hueShift;
+        uniform float saturationShift;
+        uniform float brightnessShift;
+
+        // https://love2d.org/wiki/HSV_color
+        vec3 hsbToRgb(vec3 c) { return mix(vec3(1.), clamp((abs(fract(c.x + vec3(3., 2., 1.) / 3.) * 6. - 3.) - 1.), 0., 1.), c.y) * c.z; }
+        // http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+        vec3 rgbToHsb(vec3 c) {
+            vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+            vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+            vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+            float d = q.x - min(q.w, q.y);
+            float e = 1.0e-10;
+            return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+        }
+
+        void main() {
+            vec3 hsb = rgbToHsb(texture2D(tex, gl_TexCoord[0].st).rgb);
+            vec3 rgb = hsbToRgb(vec3(hsb.x + hueShift, hsb.y + saturationShift, hsb.z + brightnessShift));
+            gl_FragColor = vec4(rgb, 1.0);
+        });
+
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
+    shader.linkProgram();
+
+    this->hueShift.set("hueShift", hueShift, 0, 1);
+    this->saturationShift.set("saturationShift", saturationShift, 0, 1);
+    this->brightnessShift.set("brightnessShift", brightnessShift, 0, 1);
+    parameters.add(this->hueShift);
+    parameters.add(this->saturationShift);
+    parameters.add(this->brightnessShift);
 }
+
+void HsbShiftPass::render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depth)
+{
+    writeFbo.begin();
+    shader.begin();
+    shader.setUniformTexture("tex", readFbo.getTexture(), 0);
+    shader.setUniform1f("hueShift", hueShift);
+    shader.setUniform1f("saturationShift", saturationShift);
+    shader.setUniform1f("brightnessShift", brightnessShift);
+
+    texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
+
+    shader.end();
+    writeFbo.end();
+}
+} // namespace itg

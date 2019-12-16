@@ -35,27 +35,27 @@
 
 namespace itg
 {
-    /*
+/*
      * Frei-Chen edge detector ported from code here 
      * @see https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/HorizontalTiltShiftShader.js
      */
-    class HorizontalTiltShifPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<HorizontalTiltShifPass> Ptr;
-        
-        HorizontalTiltShifPass(const ofVec2f& aspect, bool arb);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-        float getH() { return h; }
-        void setH(float v) { h = v; }
-        
-        float getR() { return r; }
-        void setR(float v) { r = v; }
-        
-    private:
-        ofShader shader;
-        float h, r;
-    };
-}
+class HorizontalTiltShifPass : public RenderPass
+{
+public:
+    typedef shared_ptr<HorizontalTiltShifPass> Ptr;
+
+    HorizontalTiltShifPass(const ofVec2f &aspect, bool arb);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+    ofParameter<float> &getH() { return h; }
+    void setH(float v) { h = v; }
+
+    ofParameter<float> &getR() { return r; }
+    void setR(float v) { r = v; }
+
+private:
+    ofShader shader;
+    ofParameter<float> h, r;
+};
+} // namespace itg

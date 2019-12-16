@@ -36,53 +36,50 @@
 
 namespace itg
 {
-    class ToonPass : public RenderPass
-    {
-    public:
-        //https://github.com/davertron/ToonCabinet
-        typedef shared_ptr<ToonPass> Ptr;
-        
-        ToonPass(const ofVec2f& aspect, bool arb, float edgeThreshold = 0.2, float level = 1.0,
-                 const ofVec4f& ambientColor = ofVec4f(0.1,0.1,0.1,1.0),
-                 const ofVec4f& diffuseColor = ofVec4f(0.9,0.9,0.9,1.0),
-                 const ofVec4f& specularColor = ofVec4f(1,1,1,1),
-                 bool isSpecular = false, float shinyness = 100);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depth);
-        
-        void setEdgeThreshold(float val) { edgeThreshold = val; }
-        float getEdgeThreshold() { return edgeThreshold; }
-        
-        void setLevel(float val ) { level = val; }
-        float getLevel() { return level; }
-        
-        void setAmbientColor(const ofVec4f& val) { ambientColor = val; }
-        const ofVec4f getAmbientColor() { return ambientColor; }
-        
-        void setDiffuseColor(const ofVec4f& val) { diffuseColor = val; }
-        const ofVec4f getDiffuseColor() { return diffuseColor; }
-        
-        void setSpecularColor(const ofVec4f& val) { specularColor = val; }
-        const ofVec4f getSpecularColor() { return specularColor; }
-        
-        void setEnableSpecular(bool b) { isSpecular = b; }
-        bool getEnableSpecular() { return isSpecular; }
-        
-        void setShinyness(float val ) { shinyness = val; }
-        float getShinyness() { return shinyness; }
-        
-    private:
-        
-        ofShader shader;
-        
-        float edgeThreshold;
-        float level;
-        ofVec4f ambientColor;
-        ofVec4f diffuseColor;
-        ofVec4f specularColor;
-        bool isSpecular;
-        float shinyness;
-        
-        
-    };
-}
+class ToonPass : public RenderPass
+{
+public:
+    //https://github.com/davertron/ToonCabinet
+    typedef shared_ptr<ToonPass> Ptr;
+
+    ToonPass(const ofVec2f &aspect, bool arb, float edgeThreshold = 0.2, float level = 1.0,
+             const ofVec4f &ambientColor = ofVec4f(0.1, 0.1, 0.1, 1.0),
+             const ofVec4f &diffuseColor = ofVec4f(0.9, 0.9, 0.9, 1.0),
+             const ofVec4f &specularColor = ofVec4f(1, 1, 1, 1),
+             bool isSpecular = false, float shinyness = 100);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depth);
+
+    void setEdgeThreshold(float val) { edgeThreshold = val; }
+    ofParameter<float> getEdgeThreshold() { return edgeThreshold; }
+
+    void setLevel(float val) { level = val; }
+    ofParameter<float> &getLevel() { return level; }
+
+    void setAmbientColor(const ofVec4f &val) { ambientColor = val; }
+    const ofVec4f getAmbientColor() { return ambientColor; }
+
+    void setDiffuseColor(const ofVec4f &val) { diffuseColor = val; }
+    const ofVec4f getDiffuseColor() { return diffuseColor; }
+
+    void setSpecularColor(const ofVec4f &val) { specularColor = val; }
+    const ofVec4f getSpecularColor() { return specularColor; }
+
+    void setEnableSpecular(bool b) { isSpecular = b; }
+    ofParameter<bool> &getEnableSpecular() { return isSpecular; }
+
+    void setShinyness(float val) { shinyness = val; }
+    ofParameter<float> &getShinyness() { return shinyness; }
+
+private:
+    ofShader shader;
+
+    ofParameter<float> edgeThreshold;
+    ofParameter<float> level;
+    ofVec4f ambientColor;
+    ofVec4f diffuseColor;
+    ofVec4f specularColor;
+    ofParameter<bool> isSpecular;
+    ofParameter<float> shinyness;
+};
+} // namespace itg

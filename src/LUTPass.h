@@ -40,17 +40,16 @@ class LUTPass : public RenderPass
 public:
     typedef shared_ptr<LUTPass> Ptr;
 
-    LUTPass(const ofVec2f& aspect, bool arb);
+    LUTPass(const ofVec2f &aspect, bool arb);
     ~LUTPass();
 
-    LUTPass*loadLUT(string path);
-    void render(ofFbo& readFbo, ofFbo& writeFbo);
+    LUTPass *loadLUT(string path);
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
 
 private:
-
     GLuint lut_tex;
     ofShader shader;
 
     void dispose();
 };
-}
+} // namespace itg

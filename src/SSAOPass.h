@@ -36,39 +36,38 @@
 
 namespace itg
 {
-    /*
+/*
      * @see https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/SSAOShader.js
      */
-    class SSAOPass : public RenderPass
-    {
-    public:
-        
-        typedef shared_ptr<SSAOPass> Ptr;
-        
-        SSAOPass(const ofVec2f& aspect, bool arb, float cameraNear = 1, float cameraFar = 1000, float fogNear = 1, float fogFar = 1000, bool fogEnabled = false, bool onlyAO = false, float aoClamp = 0.5, float lumInfluence = 0.9);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depth);
-        
-        void setCameraNear(float v){ cameraNear = v; }
-        void setCameraFar(float v){ cameraFar = v; }
-        void setFogNear(float v){ fogNear = v; }
-        void setFogFar(float v){ fogFar = v; }
-        void setFogEnabled(bool v){ fogEnabled = v; }
-        void setOnlyAO(bool v){ onlyAO = v; }
-        void setAoClamp(float v){ aoClamp = v; }
-        void setLumInfluence(float v){ lumInfluence = v; }
-    private:
-        
-        ofShader shader;
-        
-        float cameraNear;
-        float cameraFar;
-        float fogNear;
-        float fogFar;
-        bool fogEnabled;
-        bool onlyAO;
-        float aoClamp;
-        float lumInfluence;
-        
-    };
-}
+class SSAOPass : public RenderPass
+{
+public:
+    typedef shared_ptr<SSAOPass> Ptr;
+
+    SSAOPass(const ofVec2f &aspect, bool arb, float cameraNear = 1, float cameraFar = 1000, float fogNear = 1, float fogFar = 1000, bool fogEnabled = false, bool onlyAO = false, float aoClamp = 0.5, float lumInfluence = 0.9);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depth);
+
+    // TODO: add param getters
+    void setCameraNear(float v) { cameraNear = v; }
+    void setCameraFar(float v) { cameraFar = v; }
+    void setFogNear(float v) { fogNear = v; }
+    void setFogFar(float v) { fogFar = v; }
+    void setFogEnabled(bool v) { fogEnabled = v; }
+    void setOnlyAO(bool v) { onlyAO = v; }
+    void setAoClamp(float v) { aoClamp = v; }
+    void setLumInfluence(float v) { lumInfluence = v; }
+
+private:
+    ofShader shader;
+
+    ofParameter<float> cameraNear;
+    ofParameter<float> cameraFar;
+    ofParameter<float> fogNear;
+    ofParameter<float> fogFar;
+    ofParameter<bool> fogEnabled;
+    ofParameter<bool> onlyAO;
+    ofParameter<float> aoClamp;
+    ofParameter<float> lumInfluence;
+};
+} // namespace itg

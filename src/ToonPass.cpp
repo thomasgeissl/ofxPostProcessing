@@ -34,137 +34,147 @@
 
 namespace itg
 {
-    ToonPass::ToonPass(const ofVec2f& aspect, bool arb, float edgeThreshold, float level,
-                       const ofVec4f& ambientColor,
-                       const ofVec4f& diffuseColor,
-                       const ofVec4f& specularColor,
-                       bool isSpecular, float shinyness) :
-        edgeThreshold(edgeThreshold), level(level), ambientColor(ambientColor), diffuseColor(diffuseColor), specularColor(specularColor), isSpecular(isSpecular), shinyness(shinyness), RenderPass(aspect, arb, "toon")
-    {
-        string vertShaderSrc = STRINGIFY(
-            varying vec3 v;
-            varying vec3 N;
+ToonPass::ToonPass(const ofVec2f &aspect, bool arb, float edgeThreshold, float level,
+                   const ofVec4f &ambientColor,
+                   const ofVec4f &diffuseColor,
+                   const ofVec4f &specularColor,
+                   bool isSpecular, float shinyness) : edgeThreshold(edgeThreshold), level(level), ambientColor(ambientColor), diffuseColor(diffuseColor), specularColor(specularColor), isSpecular(isSpecular), shinyness(shinyness), RenderPass(aspect, arb, "toon")
+{
+    string vertShaderSrc = STRINGIFY(
+        varying vec3 v;
+        varying vec3 N;
 
-            void main()
+        void main() {
+            v = vec3(gl_ModelViewMatrix * gl_Vertex);
+            N = normalize(gl_NormalMatrix * gl_Normal);
+
+            gl_TexCoord[0] = gl_MultiTexCoord0;
+            gl_Position = ftransform();
+        });
+
+    string fragShaderSrc = STRINGIFY(
+        uniform sampler2D normalImage;
+        uniform float textureSizeX;
+        uniform float textureSizeY;
+        uniform float normalEdgeThreshold;
+        uniform float qLevel;
+        uniform int bSpecular;
+        uniform vec4 ambient;
+        uniform vec4 diffuse;
+        uniform vec4 specular;
+        uniform float shinyness;
+
+        varying vec3 v;
+        varying vec3 N;
+
+        vec3 getNormal(vec2 st) {
+            vec2 texcoord = clamp(st, 0.001, 0.999);
+            return texture2D(normalImage, texcoord).rgb;
+        }
+
+        void main(void) {
+            float dxtex = 1.0 / textureSizeX;
+            float dytex = 1.0 / textureSizeY;
+
+            vec2 st = gl_TexCoord[0].st;
+            // access center pixel and 4 surrounded pixel
+            vec3 center = getNormal(st).rgb;
+            vec3 left = getNormal(st + vec2(dxtex, 0.0)).rgb;
+            vec3 right = getNormal(st + vec2(-dxtex, 0.0)).rgb;
+            vec3 up = getNormal(st + vec2(0.0, -dytex)).rgb;
+            vec3 down = getNormal(st + vec2(0.0, dytex)).rgb;
+
+            // discrete Laplace operator
+            vec3 laplace = abs(-4.0 * center + left + right + up + down);
+            // if one rgb-component of convolution result is over threshold => edge
+            vec4 line = texture2D(normalImage, st);
+            if (laplace.r > normalEdgeThreshold || laplace.g > normalEdgeThreshold || laplace.b > normalEdgeThreshold)
             {
-                v = vec3(gl_ModelViewMatrix * gl_Vertex);
-                N = normalize(gl_NormalMatrix * gl_Normal);
-
-                gl_TexCoord[0] = gl_MultiTexCoord0;
-                gl_Position = ftransform();
+                line = vec4(0.0, 0.0, 0.0, 1.0); // => color the pixel green
             }
-        );
-        
-        string fragShaderSrc = STRINGIFY(
-            uniform sampler2D normalImage;
-            uniform float textureSizeX;
-            uniform float textureSizeY;
-            uniform float normalEdgeThreshold;
-            uniform float qLevel;
-            uniform int bSpecular;
-            uniform vec4 ambient;
-            uniform vec4 diffuse;
-            uniform vec4 specular;
-            uniform float shinyness;
-                                         
-            varying vec3 v;
-            varying vec3 N;
-
-            vec3 getNormal(vec2 st){
-                vec2 texcoord = clamp(st, 0.001, 0.999);
-                return texture2D(normalImage, texcoord).rgb;
+            else
+            {
+                line = vec4(1.0, 1.0, 1.0, 1.0); // black
             }
 
-            void main(void){
-                float dxtex = 1.0 / textureSizeX;
-                float dytex = 1.0 / textureSizeY;
+            //end Line;
 
-                vec2 st = gl_TexCoord[0].st;
-                // access center pixel and 4 surrounded pixel
-                vec3 center = getNormal(st).rgb;
-                vec3 left = getNormal(st + vec2(dxtex, 0.0)).rgb;
-                vec3 right = getNormal(st + vec2(-dxtex, 0.0)).rgb;
-                vec3 up = getNormal(st + vec2(0.0, -dytex)).rgb;
-                vec3 down = getNormal(st + vec2(0.0, dytex)).rgb;
+            //start Phong
 
-                // discrete Laplace operator
-                vec3 laplace = abs(-4.0*center + left + right + up + down);
-                // if one rgb-component of convolution result is over threshold => edge
-                vec4 line = texture2D(normalImage, st);
-                if(laplace.r > normalEdgeThreshold
-                || laplace.g > normalEdgeThreshold
-                || laplace.b > normalEdgeThreshold){
-                    line = vec4(0.0, 0.0, 0.0, 1.0); // => color the pixel green
-                } else {
-                    line = vec4(1.0, 1.0, 1.0, 1.0); // black
-                }
+            //vec3 lightPosition = vec3(100.0, 100.0, 50.0);
+            vec3 lightPosition = gl_LightSource[0].position.xyz;
 
-                //end Line;
+            vec3 L = normalize(lightPosition - v);
+            vec3 E = normalize(-v);
+            vec3 R = normalize(-reflect(L, N));
 
-                //start Phong
+            // ambient term
+            vec4 Iamb = ambient;
 
-                //vec3 lightPosition = vec3(100.0, 100.0, 50.0);
-                vec3 lightPosition = gl_LightSource[0].position.xyz;
+            // diffuse term
+            vec4 Idiff = texture2D(normalImage, gl_TexCoord[0].st) * diffuse;
+            //vec4 Idiff = vec4(1.0, 1.0, 1.0, 1.0) * diffuse;
+            Idiff *= max(dot(N, L), 0.0);
+            Idiff = clamp(Idiff, 0.0, 1.0);
 
-                vec3 L = normalize(lightPosition - v);
-                vec3 E = normalize(-v);
-                vec3 R = normalize(-reflect(L,N));
+            // specular term
+            vec4 Ispec = specular;
+            Ispec *= pow(max(dot(R, E), 0.0), shinyness);
+            Ispec = clamp(Ispec, 0.0, 1.0);
 
-                // ambient term
-                vec4 Iamb = ambient;
+            vec4 color = Iamb + Idiff;
+            if (bSpecular == 1)
+                color += Ispec;
+            // store previous alpha value
+            float alpha = color.a;
+            // quantize process: multiply by factor, round and divde by factor
+            color = floor(0.5 + (qLevel * color)) / qLevel;
+            // set fragment/pixel color
+            color.a = alpha;
 
-                // diffuse term
-                vec4 Idiff = texture2D( normalImage, gl_TexCoord[0].st) * diffuse;
-                //vec4 Idiff = vec4(1.0, 1.0, 1.0, 1.0) * diffuse;
-                Idiff *= max(dot(N,L), 0.0);
-                Idiff = clamp(Idiff, 0.0, 1.0);
+            gl_FragColor = color * line;
+        }
 
-                // specular term
-                vec4 Ispec = specular;
-                Ispec *= pow(max(dot(R,E),0.0), shinyness);
-                Ispec = clamp(Ispec, 0.0, 1.0); 
-                
-                vec4 color = Iamb + Idiff;
-                if ( bSpecular == 1 ) color += Ispec;
-                // store previous alpha value
-                float alpha = color.a;
-                // quantize process: multiply by factor, round and divde by factor
-                color = floor(0.5 + (qLevel * color)) / qLevel;
-                // set fragment/pixel color
-                color.a = alpha;
+    );
+    shader.setupShaderFromSource(GL_VERTEX_SHADER, vertShaderSrc);
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
+    shader.linkProgram();
+    // ofVec4f ambientColor;
+    // ofVec4f diffuseColor;
+    // ofVec4f specularColor;
 
-                gl_FragColor = color * line;
-            }
-                                         
+    this->edgeThreshold.set("edgeThreshold", edgeThreshold, 0, 1);
+    this->level.set("level", level, 0, 1);
+    this->isSpecular.set("isSpecular", isSpecular);
+    this->shinyness.set("shinyness", shinyness, 0, 1000);
 
-        );
-        shader.setupShaderFromSource(GL_VERTEX_SHADER, vertShaderSrc);
-        shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
-        shader.linkProgram();
-        
-    }
-    
-    void ToonPass::render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depthTex)
-    {
-        
-        writeFbo.begin();
-        
-        shader.begin();
-        
-        shader.setUniformTexture("normalImage", readFbo.getTexture(), 0);
-        shader.setUniform1f("textureSizeX", writeFbo.getWidth());
-        shader.setUniform1f("textureSizeY", writeFbo.getHeight());
-        shader.setUniform1f("normalEdgeThreshold", edgeThreshold);
-        shader.setUniform1f("qLevel", level);
-        shader.setUniform1i("bSpecular", isSpecular ? 1 : 0);
-        shader.setUniform4f("ambient", ambientColor.x, ambientColor.y, ambientColor.z, ambientColor.w);
-        shader.setUniform4f("diffuse", diffuseColor.x, diffuseColor.y, diffuseColor.z, diffuseColor.w);
-        shader.setUniform4f("specular", specularColor.x, specularColor.y, specularColor.z, specularColor.w);
-        shader.setUniform1f("shinyness", shinyness);
-        
-        texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
-        
-        shader.end();
-        writeFbo.end();
-    }
+    parameters.add(this->edgeThreshold);
+    parameters.add(this->level);
+    parameters.add(this->isSpecular);
+    parameters.add(this->shinyness);
 }
+
+void ToonPass::render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depthTex)
+{
+
+    writeFbo.begin();
+
+    shader.begin();
+
+    shader.setUniformTexture("normalImage", readFbo.getTexture(), 0);
+    shader.setUniform1f("textureSizeX", writeFbo.getWidth());
+    shader.setUniform1f("textureSizeY", writeFbo.getHeight());
+    shader.setUniform1f("normalEdgeThreshold", edgeThreshold);
+    shader.setUniform1f("qLevel", level);
+    shader.setUniform1i("bSpecular", isSpecular ? 1 : 0);
+    shader.setUniform4f("ambient", ambientColor.x, ambientColor.y, ambientColor.z, ambientColor.w);
+    shader.setUniform4f("diffuse", diffuseColor.x, diffuseColor.y, diffuseColor.z, diffuseColor.w);
+    shader.setUniform4f("specular", specularColor.x, specularColor.y, specularColor.z, specularColor.w);
+    shader.setUniform1f("shinyness", shinyness);
+
+    texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
+
+    shader.end();
+    writeFbo.end();
+}
+} // namespace itg

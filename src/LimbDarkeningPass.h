@@ -35,36 +35,37 @@
 
 namespace itg
 {
-    class LimbDarkeningPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<LimbDarkeningPass> Ptr;
-        
-        LimbDarkeningPass(const ofVec2f& aspect,
-                          bool arb,
-                          float radialScale = 1.2,
-                          float brightness = 2.5,
-                          const ofVec3f & startColor = ofVec3f(1.0,1.0,1.0),
-                          const ofVec3f & endColor = ofVec3f(1.0,1.0,1.0));
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-        void setRadialScale(float val) { radialScale = val; };
-        float getRadialScale() { return radialScale; }
-        
-        void setBrightness(float val) { brightness = val; }
-        float getBrightness() { return brightness; }
-        
-        void setStartColor(const ofVec3f & val) { startColor = val; }
-        const ofVec3f getStartColor() { return startColor; }
-        
-        void setEndColor(const ofVec3f & val) { endColor = val; }
-        const ofVec3f getEndColor() { return endColor; }
-    private:
-        ofShader shader;
-        ofVec3f startColor;
-        ofVec3f endColor;
-        float radialScale;
-        float brightness;
-    };
-}
+class LimbDarkeningPass : public RenderPass
+{
+public:
+    typedef shared_ptr<LimbDarkeningPass> Ptr;
+
+    LimbDarkeningPass(const ofVec2f &aspect,
+                      bool arb,
+                      float radialScale = 1.2,
+                      float brightness = 2.5,
+                      ofColor startColor = ofColor(255, 255, 255),
+                      ofColor endColor = ofColor(255, 255, 255));
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+    void setRadialScale(float val) { radialScale = val; };
+    ofParameter<float> &getRadialScale() { return radialScale; }
+
+    void setBrightness(float val) { brightness = val; }
+    ofParameter<float> getBrightness() { return brightness; }
+
+    void setStartColor(const ofColor &val) { startColor = val; }
+    ofParameter<ofColor> &getStartColor() { return startColor; }
+
+    void setEndColor(const ofColor &val) { endColor = val; }
+    ofParameter<ofColor> &getEndColor() { return endColor; }
+
+private:
+    ofShader shader;
+    ofParameter<ofColor> startColor;
+    ofParameter<ofColor> endColor;
+    ofParameter<float> radialScale;
+    ofParameter<float> brightness;
+};
+} // namespace itg

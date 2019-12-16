@@ -34,74 +34,85 @@
 
 namespace itg
 {
-    ZoomBlurPass::ZoomBlurPass(const ofVec2f& aspect, bool arb, float centerX, float centerY,
-                                   float exposure, float decay, float density,
-                                   float weight, float clamp) :
-        centerX(centerX), centerY(centerY), exposure(exposure), decay(decay), density(density), weight(weight), clamp(clamp), RenderPass(aspect, arb, "zoomblur")
-    {
-        
-        string fragShaderSrc = STRINGIFY(
-            uniform sampler2D tDiffuse;
+ZoomBlurPass::ZoomBlurPass(const ofVec2f &aspect, bool arb, float centerX, float centerY,
+                           float exposure, float decay, float density,
+                           float weight, float clamp) : centerX(centerX), centerY(centerY), exposure(exposure), decay(decay), density(density), weight(weight), clamp(clamp), RenderPass(aspect, arb, "zoomblur")
+{
 
-            uniform float fX;
-            uniform float fY;
-            uniform float fExposure;
-            uniform float fDecay;
-            uniform float fDensity;
-            uniform float fWeight;
-            uniform float fClamp;
+    string fragShaderSrc = STRINGIFY(
+        uniform sampler2D tDiffuse;
 
-            const int iSamples = 20;
+        uniform float fX;
+        uniform float fY;
+        uniform float fExposure;
+        uniform float fDecay;
+        uniform float fDensity;
+        uniform float fWeight;
+        uniform float fClamp;
 
-            void main()
+        const int iSamples = 20;
+
+        void main() {
+            vec2 vUv = gl_TexCoord[0].st;
+            vec2 deltaTextCoord = vec2(vUv - vec2(fX, fY));
+            deltaTextCoord *= 1.0 / float(iSamples) * fDensity;
+            vec2 coord = vUv;
+            float illuminationDecay = 1.0;
+            vec4 FragColor = vec4(0.0);
+
+            for (int i = 0; i < iSamples; i++)
             {
-                vec2 vUv = gl_TexCoord[0].st;
-                vec2 deltaTextCoord = vec2(vUv - vec2(fX,fY));
-                deltaTextCoord *= 1.0 /  float(iSamples) * fDensity;
-                vec2 coord = vUv;
-                float illuminationDecay = 1.0;
-                vec4 FragColor = vec4(0.0);
+                coord -= deltaTextCoord;
+                vec4 texel = texture2D(tDiffuse, coord);
+                texel *= illuminationDecay * fWeight;
 
-                for(int i=0; i < iSamples ; i++)
-                {
-                    coord -= deltaTextCoord;
-                    vec4 texel = texture2D(tDiffuse, coord);
-                    texel *= illuminationDecay * fWeight;
+                FragColor += texel;
 
-                    FragColor += texel;
-
-                    illuminationDecay *= fDecay;
-                }
-                FragColor *= fExposure;
-                FragColor = clamp(FragColor, 0.0, fClamp);
-                gl_FragColor = FragColor;
+                illuminationDecay *= fDecay;
             }
-        );
-        
-        shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
-        shader.linkProgram();
-        
-    }
-    
-    void ZoomBlurPass::render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depthTex)
-    {
-        writeFbo.begin();
-        
-        
-        shader.begin();
-        
-        shader.setUniformTexture("tDiffuse", readFbo.getTexture(), 0);
-        shader.setUniform1f("fX", centerX);
-        shader.setUniform1f("fY", centerY);
-        shader.setUniform1f("fExposure", exposure);
-        shader.setUniform1f("fDecay", decay);
-        shader.setUniform1f("fDensity", density);
-        shader.setUniform1f("fWeight", weight);
-        shader.setUniform1f("fClamp", clamp);
-        
-        texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
-        
-        shader.end();
-        writeFbo.end();
-    }
+            FragColor *= fExposure;
+            FragColor = clamp(FragColor, 0.0, fClamp);
+            gl_FragColor = FragColor;
+        });
+
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
+    shader.linkProgram();
+
+    this->centerX.set("centerX", centerX, 0, 1);
+    this->centerY.set("centerY", centerY, 0, 1);
+    this->exposure.set("exposure", exposure, 0, 1);
+    this->decay.set("decay", decay, 0, 1);
+    this->density.set("density", density, 0, 1);
+    this->weight.set("weight", weight, 0, 1);
+    this->clamp.set("clamp", clamp, 0, 1);
+
+    parameters.add(this->centerX);
+    parameters.add(this->centerY);
+    parameters.add(this->exposure);
+    parameters.add(this->decay);
+    parameters.add(this->density);
+    parameters.add(this->weight);
+    parameters.add(this->clamp);
 }
+
+void ZoomBlurPass::render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depthTex)
+{
+    writeFbo.begin();
+
+    shader.begin();
+
+    shader.setUniformTexture("tDiffuse", readFbo.getTexture(), 0);
+    shader.setUniform1f("fX", centerX);
+    shader.setUniform1f("fY", centerY);
+    shader.setUniform1f("fExposure", exposure);
+    shader.setUniform1f("fDecay", decay);
+    shader.setUniform1f("fDensity", density);
+    shader.setUniform1f("fWeight", weight);
+    shader.setUniform1f("fClamp", clamp);
+
+    texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
+
+    shader.end();
+    writeFbo.end();
+}
+} // namespace itg

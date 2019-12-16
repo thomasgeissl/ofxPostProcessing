@@ -35,29 +35,29 @@
 
 namespace itg
 {
-    class HsbShiftPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<HsbShiftPass> Ptr;
-        
-        HsbShiftPass(const ofVec2f& aspect, bool arb, float hueShift = 0.f, float saturationShift = 0.f, float brightnessShift = 0.f);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depth);
-        
-        float getHueShift() const { return hueShift; }
-        void setHueShift(float hueShift) { this->hueShift = hueShift; }
-        
-        float getSaturationShift() const { return saturationShift; }
-        void setSaturationShift(float saturationShift) { this->saturationShift = saturationShift; }
-        
-        float getBrightnessShift() const { return brightnessShift; }
-        void setSpeed(float brightnessShift) { this->brightnessShift = brightnessShift; }
-        
-    private:
-        ofShader shader;
-        float hueShift;
-        float saturationShift;
-        float brightnessShift;
-    };
-    
-}
+class HsbShiftPass : public RenderPass
+{
+public:
+    typedef shared_ptr<HsbShiftPass> Ptr;
+
+    HsbShiftPass(const ofVec2f &aspect, bool arb, float hueShift = 0.f, float saturationShift = 0.f, float brightnessShift = 0.f);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depth);
+
+    ofParameter<float> &getHueShift() { return hueShift; }
+    void setHueShift(float hueShift) { this->hueShift = hueShift; }
+
+    ofParameter<float> &getSaturationShift() { return saturationShift; }
+    void setSaturationShift(float saturationShift) { this->saturationShift = saturationShift; }
+
+    ofParameter<float> &getBrightnessShift() { return brightnessShift; }
+    void setSpeed(float brightnessShift) { this->brightnessShift = brightnessShift; }
+
+private:
+    ofShader shader;
+    ofParameter<float> hueShift;
+    ofParameter<float> saturationShift;
+    ofParameter<float> brightnessShift;
+};
+
+} // namespace itg

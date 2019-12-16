@@ -35,29 +35,29 @@
 
 namespace itg
 {
-    /*
+/*
      * Frei-Chen edge detector ported from code here 
      * @see http://rastergrid.com/blog/2011/01/frei-chen-edge-detector/
      */
-    class EdgePass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<EdgePass> Ptr;
-        
-        EdgePass(const ofVec2f& aspect, bool arb);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-        float getHue() const { return hue; }
-        void setHue(float hue) { this->hue = hue; }
-        
-        float getSaturation() const { return saturation; }
-        void setSaturation(float saturation) { this->saturation = saturation; }
-        
-        bool hasArbShader() { return true; }
-        
-    private:
-        ofShader shader;
-        float hue, saturation;
-    };
-}
+class EdgePass : public RenderPass
+{
+public:
+    typedef shared_ptr<EdgePass> Ptr;
+
+    EdgePass(const ofVec2f &aspect, bool arb);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+    ofParameter<float> &getHue() { return hue; }
+    void setHue(float hue) { this->hue = hue; }
+
+    ofParameter<float> &getSaturation() { return saturation; }
+    void setSaturation(float saturation) { this->saturation = saturation; }
+
+    bool hasArbShader() { return true; }
+
+private:
+    ofShader shader;
+    ofParameter<float> hue, saturation;
+};
+} // namespace itg

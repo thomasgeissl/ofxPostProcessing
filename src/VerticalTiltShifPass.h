@@ -35,27 +35,27 @@
 
 namespace itg
 {
-    /*
+/*
      * Frei-Chen edge detector ported from code here 
      * @see https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/VerticalTiltShiftShader.js
      */
-    class VerticalTiltShifPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<VerticalTiltShifPass> Ptr;
-        
-        VerticalTiltShifPass(const ofVec2f& aspect, bool arb);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-        float getH() { return v; }
-        void setH(float val) { v = val; }
-        
-        float getR() { return r; }
-        void setR(float val) { r = val; }
-        
-    private:
-        ofShader shader;
-        float v, r;
-    };
-}
+class VerticalTiltShifPass : public RenderPass
+{
+public:
+    typedef shared_ptr<VerticalTiltShifPass> Ptr;
+
+    VerticalTiltShifPass(const ofVec2f &aspect, bool arb);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+    ofParameter<float> &getH() { return v; }
+    void setH(float val) { v = val; }
+
+    ofParameter<float> &getR() { return r; }
+    void setR(float val) { r = val; }
+
+private:
+    ofShader shader;
+    ofParameter<float> v, r;
+};
+} // namespace itg

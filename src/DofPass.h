@@ -36,36 +36,32 @@
 
 namespace itg
 {
-    /**
+/**
      * @see https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/BokehShader.js
      */
-    class DofPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<DofPass> Ptr;
-        
-        DofPass(const ofVec2f& aspect, bool arb, float focus = 0.985, float aperture = 0.8, float maxBlur = 0.6);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo, ofTexture& depthTex);
-        
-        float getFocus() const { return focus; }
-        void setFocus(float focus) { this->focus = focus; }
-        
-        float getAperture() const { return aperture; }
-        void setAperture(float aperture) { this->aperture = aperture; }
-        
-        float getMaxBlur() const { return maxBlur; }
-        void setMaxBlur(float maxBlur) { this->maxBlur = maxBlur; }
-        
-        float& getFocusRef() { return focus; }
-        float& getApertureRef() { return aperture; }
-        float& getMaxBlurRef() { return maxBlur; }
-        
-    private:
-        ofShader shader;
-        
-        float focus;
-        float aperture;
-        float maxBlur;
-    };
-}
+class DofPass : public RenderPass
+{
+public:
+    typedef shared_ptr<DofPass> Ptr;
+
+    DofPass(const ofVec2f &aspect, bool arb, float focus = 0.985, float aperture = 0.8, float maxBlur = 0.6);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo, ofTexture &depthTex);
+
+    ofParameter<float> &getFocus() { return focus; }
+    void setFocus(float focus) { this->focus = focus; }
+
+    ofParameter<float> &getAperture() { return aperture; }
+    void setAperture(float aperture) { this->aperture = aperture; }
+
+    ofParameter<float> &getMaxBlur() { return maxBlur; }
+    void setMaxBlur(float maxBlur) { this->maxBlur = maxBlur; }
+
+private:
+    ofShader shader;
+
+    ofParameter<float> focus;
+    ofParameter<float> aperture;
+    ofParameter<float> maxBlur;
+};
+} // namespace itg

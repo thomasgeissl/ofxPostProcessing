@@ -35,17 +35,17 @@
 
 namespace itg
 {
-    //http://irrlicht.sourceforge.net/forum/viewtopic.php?f=4&t=47888
-    class RimHighlightingPass : public RenderPass
-    {
-    public:
-        typedef shared_ptr<RimHighlightingPass> Ptr;
-        
-        RimHighlightingPass(const ofVec2f& aspect, bool arb);
-        
-        void render(ofFbo& readFbo, ofFbo& writeFbo);
-        
-    private:
-        ofShader shader;
-    };
-}
+//http://irrlicht.sourceforge.net/forum/viewtopic.php?f=4&t=47888
+class RimHighlightingPass : public RenderPass
+{
+public:
+    typedef shared_ptr<RimHighlightingPass> Ptr;
+
+    RimHighlightingPass(const ofVec2f &aspect, bool arb);
+
+    void render(ofFbo &readFbo, ofFbo &writeFbo);
+
+private:
+    ofShader shader;
+};
+} // namespace itg

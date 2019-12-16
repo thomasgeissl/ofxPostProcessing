@@ -48,6 +48,7 @@
 #include "HorizontalTiltShifPass.h"
 #include "VerticalTiltShifPass.h"
 #include "RGBShiftPass.h"
+#include "HsbShiftPass.h"
 #include "FakeSSSPass.h"
 #include "ZoomBlurPass.h"
 #include "BleachBypassPass.h"

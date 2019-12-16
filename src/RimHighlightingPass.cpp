@@ -33,41 +33,37 @@
 
 namespace itg
 {
-    RimHighlightingPass::RimHighlightingPass(const ofVec2f& aspect, bool arb) :
-        RenderPass(aspect, arb, "rimhighlighting")
-    {
-        string vertShaderSrc = STRINGIFY(
-                                         varying vec3 normal;
-                                         varying vec3 sides;
-                                         varying vec2 v_texCoord;
-                                         varying vec4 v_color;
-                                         
-                                         void main()
-        {
+RimHighlightingPass::RimHighlightingPass(const ofVec2f &aspect, bool arb) : RenderPass(aspect, arb, "rimhighlighting")
+{
+    string vertShaderSrc = STRINGIFY(
+        varying vec3 normal;
+        varying vec3 sides;
+        varying vec2 v_texCoord;
+        varying vec4 v_color;
+
+        void main() {
             normal = gl_NormalMatrix * gl_Normal;
             gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
             sides = gl_Position.xyz;
             sides.x = sides.x - 128.0;
-            
+
             v_texCoord = vec2(gl_MultiTexCoord0);
             v_color = gl_Color;
-        }
-                                         );
-        
-        string fragShaderSrc = STRINGIFY(
-                                         varying vec3 normal;
-                                         varying vec3 sides;
-                                         varying vec2 v_texCoord;
-                                         uniform sampler2D myTexture;
-                                         varying vec4 v_color;
-                                         
-                                         void main()
-        {
+        });
+
+    string fragShaderSrc = STRINGIFY(
+        varying vec3 normal;
+        varying vec3 sides;
+        varying vec2 v_texCoord;
+        uniform sampler2D myTexture;
+        varying vec4 v_color;
+
+        void main() {
             float intensity;
             vec3 n = normalize(normal);
             vec4 color;
-            intensity = dot(sides,n);
-            
+            intensity = dot(sides, n);
+
             gl_FragColor = texture2D(myTexture, v_texCoord);
             if (intensity >= 64.0)
             {
@@ -79,25 +75,23 @@ namespace itg
             {
                 gl_FragColor = gl_FragColor * v_color;
             }
-        }
-        );
-        
-        shader.setupShaderFromSource(GL_VERTEX_SHADER, vertShaderSrc);
-        shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
-        shader.linkProgram();
+        });
 
-    }
-    
-    void RimHighlightingPass::render(ofFbo& readFbo, ofFbo& writeFbo)
-    {
-        writeFbo.begin();
-        
-        shader.begin();
-        shader.setUniformTexture("myTexture", readFbo.getTexture(), 0);
-        
-        texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
-        
-        shader.end();
-        writeFbo.end();
-    }
+    shader.setupShaderFromSource(GL_VERTEX_SHADER, vertShaderSrc);
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragShaderSrc);
+    shader.linkProgram();
 }
+
+void RimHighlightingPass::render(ofFbo &readFbo, ofFbo &writeFbo)
+{
+    writeFbo.begin();
+
+    shader.begin();
+    shader.setUniformTexture("myTexture", readFbo.getTexture(), 0);
+
+    texturedQuad(0, 0, writeFbo.getWidth(), writeFbo.getHeight());
+
+    shader.end();
+    writeFbo.end();
+}
+} // namespace itg
